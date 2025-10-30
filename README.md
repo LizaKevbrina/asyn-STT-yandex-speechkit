@@ -2,12 +2,21 @@
   
 ## **Production Audio Processing Platform: FastAPI + n8n + Yandex Cloud**
 
+[![n8n](https://img.shields.io/badge/n8n-workflow-EA4B71?style=for-the-badge&logo=n8n)](https://n8n.io)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
+
+*Автоматическая обработка аудиофайлы из Telegram → распознавание речи Yandex SpeechKit → Текст для RAG-систем или AI-агентов*
+
 </div>
 
+---
 
 Готовая к использованию платформа для создания голосовых помощников на базе искусственного интеллекта с архитектурой микросервисов, асинхронной оркестровкой конвейеров и возможностями бесшовной интеграции LLM.
 
 **Основная возможность:** преобразование длинных аудиофайлов (до 4 часов) в текст с помощью асинхронного распознавания речи с интеллектуальной логикой повторных попыток и отслеживанием прогресса в реальном времени.
+
+---
 
 💡 **Варианты использования:**
 
@@ -163,15 +172,22 @@ agent = initialize_agent(tools, llm=OpenAI())
 📄 License
 MIT License - see LICENSE
 
+---
 
-👤 Author
-**Elizaveta Kevbrina** — AI Developer & Workflow Engineer
+## 👩‍💻 Автор
 
-GitHub: @LizaKevbrina
+<div align="center">
 
-Email: [elisa.kevbrina@yandex.ru](mailto:elisa.kevbrina@yandex.ru)
+**Елизавета Кевбрина**
 
+*Инженер по рабочим процессам и AI-интеграциям*
 
+[![Email](https://img.shields.io/badge/Email-elisa.kevbrina%40yandex.ru-red?style=flat-square&logo=gmail)](mailto:elisa.kevbrina@yandex.ru)
+[![GitHub](https://img.shields.io/badge/GitHub-%40LizaKevbrina-black?style=flat-square&logo=github)](https://github.com/LizaKevbrina)
+
+</div>
+
+---
 <div align="center">
 🙏 Acknowledgments
 Built with: FastAPI • n8n • Yandex Cloud • Docker
@@ -179,6 +195,9 @@ Built with: FastAPI • n8n • Yandex Cloud • Docker
 
 
 <div align="center">
-⭐ Поставьте этому репозиторию звездочку, если он оказался вам полезен!  
-Сделано с ❤️ для сообщества ИИ
+
+**⭐ Если проект оказался полезным, поставьте звёздочку!**
+
+Сделано с ❤️ для сообщества AI-разработчиков
+
 </div>
