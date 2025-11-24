@@ -116,13 +116,13 @@ Production-ready микросервис, который **преобразует
 
 ### Вариант 1: Как часть AI Sales Agent (главный проект)
 
-Этот модуль используется в [ AI Sales Agent](https://github.com/LizaKevbrina/ai-agent-microservices) для обработки голосовых сообщений от клиентов.
+Этот модуль используется в [ AI Sales Agent](https://github.com/LizaKevbrina/ai-agent-n8n) для обработки голосовых сообщений от клиентов.
 
 **Workflow:** Telegram голосовое → STT → LLM → RAG → Ответ клиенту
 
 ```bash
 # Уже включен в главный проект
-cd ai-agent-microservices
+cd ai-agent-n8n
 make start  # STT сервис запустится автоматически
 ```
 
@@ -134,8 +134,8 @@ make start  # STT сервис запустится автоматически
 
 **Шаг 1:** Клонируйте репозиторий
 ```bash
-git clone https://github.com/LizaKevbrina/stt-microservice.git
-cd stt-microservice
+git clone https://github.com/LizaKevbrina/asyn-STT-yandex-speechkit.git
+cd asyn-STT-yandex-speechkit
 ```
 
 **Шаг 2:** Настройте `.env`
@@ -284,8 +284,8 @@ audio.export(ogg_buffer, format="ogg", codec="libopus")
 
 ```bash
 # 1. Клонируем
-git clone https://github.com/LizaKevbrina/stt-microservice.git
-cd stt-microservice
+git clone https://github.com/LizaKevbrina/asyn-STT-yandex-speechkit.git
+cd asyn-STT-yandex-speechkit
 
 # 2. Настраиваем секреты
 cp .env.example .env
@@ -449,15 +449,15 @@ async def process_audio(audio: UploadFile):
 
 | Проект | Описание | Связь |
 |--------|----------|-------|
-| **[ AI Sales Agent](https://github.com/LizaKevbrina/ai-agent-microservices)** | Главный проект — голосовой ассистент для продаж | Использует STT для обработки голосовых сообщений |
+| **[ AI Sales Agent](https://github.com/LizaKevbrina/ai-agent-n8n)** | Главный проект — голосовой ассистент для продаж | Использует STT для обработки голосовых сообщений |
 | **STT Microservice** (этот репозиторий) | Распознавание речи до 4 часов | Standalone модуль для любых проектов |
-| **[ RAG Knowledge Sync](https://github.com/LizaKevbrina/rag-knowledge-sync)** | Автосинхронизация базы знаний | Используется в главном проекте |
+| **[ RAG Knowledge Sync](https://github.com/LizaKevbrina/RAG-platform)** | Автосинхронизация базы знаний | Используется в главном проекте |
 
 ---
 
 ##  Part of AI Agent Platform
 
-Этот сервис является частью экосистемы [ AI Sales Agent](https://github.com/LizaKevbrina/ai-agent-microservices) — production-ready AI-агента для автоматизации продаж в недвижимости.
+Этот сервис является частью экосистемы [ AI Sales Agent](https://github.com/LizaKevbrina/ai-agent-n8n) — production-ready AI-агента для автоматизации продаж в недвижимости.
 
 ### Как используется в главном проекте
 
@@ -468,7 +468,7 @@ async def process_audio(audio: UploadFile):
 # docker-compose.yml главного проекта
 services:
   stt-service:
-    image: ghcr.io/lizakevbrina/stt-microservice:latest
+    image: ghcr.io/lizakevbrina/asyn-STT-yandex-speechkit:latest
     environment:
       - YANDEX_API_KEY=${YANDEX_API_KEY}
     ports:
@@ -484,8 +484,8 @@ services:
 -  Любых AI-агентов, требующих обработку голоса
 
 **См. также:**
-- [ RAG Knowledge Sync](https://github.com/LizaKevbrina/rag-knowledge-sync) — автообновление базы знаний
-- [ AI Sales Agent](https://github.com/LizaKevbrina/ai-agent-microservices) — главный проект
+- [ RAG Knowledge Sync](https://github.com/LizaKevbrina/RAG-platform) — автообновление базы знаний
+- [ AI Sales Agent](https://github.com/LizaKevbrina/ai-agent-n8n) — главный проект
 
 ---
 
