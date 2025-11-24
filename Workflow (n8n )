@@ -1,0 +1,537 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.message.voice }}",
+              "operator": {
+                "type": "object",
+                "operation": "exists"
+              },
+              "id": "3cc1c3e0-3b75-4f98-a040-74d2515b24d0"
+            },
+            {
+              "id": "94916e51-f1da-4477-9713-8bbf999cdcce",
+              "leftValue": "={{ $json.message.audio }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "499fd928-790c-425b-9393-fb5f7532ebf4",
+      "name": "Has Voice Message?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.audio.file_id || $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "d69e3588-bb81-44f8-b48d-3614f327607c",
+      "name": "Download Voice from Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        384
+      ],
+      "webhookId": "d390fd18-9481-46fd-a170-68708212314d",
+      "credentials": {
+        "telegramApi": {
+          "id": "K1cNfxlN2ucieAGo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://45.144.179.8:8000/api/v1/stt/transcribe",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "audio_file",
+              "inputDataFieldName": "=data"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+            },
+            {
+              "name": "lang",
+              "value": "ru-RU"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "2fe92ffe-7d2a-4f9b-8a5b-6eeb37130310",
+      "name": "Start Async Transcription",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1040,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=🎙️ Распознавание запущено!\n\n⏳ Обрабатываю ваше аудио...\n📊 Файл: {{ $('Download Voice from Telegram').item.json.result.file_size / 1024 }} KB\n\n💡 Это может занять некоторое время для длинных записей.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "1c7ea37b-626a-4346-8efd-369faa2ac2f6",
+      "name": "Notify User - Started",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -816,
+        384
+      ],
+      "webhookId": "3c8c0345-a31f-481d-af6e-8e7157119cb3",
+      "credentials": {
+        "telegramApi": {
+          "id": "K1cNfxlN2ucieAGo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "id": "f4e7a2a2-0f66-461f-8432-60b6c94e4973",
+      "name": "Wait 10 seconds",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -592,
+        384
+      ],
+      "webhookId": "wait-webhook-1"
+    },
+    {
+      "parameters": {
+        "url": "=http://45.144.179.8:8000/api/v1/stt/status/{{ $('Start Async Transcription').item.json.operation_id }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "ba1867fb-4b98-4271-8f38-adc90d533409",
+      "name": "Check Transcription Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -368,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.done }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "id": "2fb2264d-e620-4b21-ad4b-d642b8d9678e"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f643ec2e-98ad-462e-bc45-19182341738e",
+      "name": "Is Transcription Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ Распознавание завершено!\n\n📝 Текст:\n{{ $json.text }}\n\n📊 Фрагментов: {{ $json.chunks_count }}\n⏱️ Обработано: {{ $('Check Transcription Status').item.json.modified_at }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "3c10ae54-1818-41c2-add7-a7e6e34e3a6d",
+      "name": "Send Transcription Result",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        272
+      ],
+      "webhookId": "ac6837f2-0605-451f-897b-89c1650f1646",
+      "credentials": {
+        "telegramApi": {
+          "id": "K1cNfxlN2ucieAGo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "5c405ebf-c35f-45df-a671-0b5a0e70c037",
+      "name": "Wait 5s and Retry",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        496
+      ],
+      "webhookId": "wait-webhook-2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Проверяем количество попыток\nconst retryCount = $input.item.json.retry_count || 0;\n\nif (retryCount >= 20) {\n  // Максимум 20 попыток (20 * 5 сек = 100 сек)\n  return {\n    json: {\n      error: 'Timeout: распознавание заняло слишком много времени',\n      retry_count: retryCount\n    }\n  };\n}\n\n// Увеличиваем счётчик\nreturn {\n  json: {\n    ...($input.item.json),\n    retry_count: retryCount + 1\n  }\n};"
+      },
+      "id": "c30e0c92-c71a-4a9c-afd6-1f6a1c5fcac5",
+      "name": "Retry Counter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              },
+              "id": "6f2f1f46-8f63-4fd8-ad92-88d2bad27094"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8e7bfd45-6b75-44e8-80e7-416a03332f0f",
+      "name": "Is Timeout?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        416,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=⚠️ Ошибка обработки аудио\n\n{{ $json.error }}\n\n💡 Попробуйте отправить файл меньшего размера или повторите попытку позже.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "e3105a64-9c97-48b8-85c4-2408b09cbbb6",
+      "name": "Send Error Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        480
+      ],
+      "webhookId": "25398fde-c562-48bc-82d5-4756908eb662",
+      "credentials": {
+        "telegramApi": {
+          "id": "K1cNfxlN2ucieAGo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "💬 Отправьте голосовое сообщение для распознавания.\n\n📊 Поддерживаемые форматы:\n• OGG Opus (из Telegram)\n• Длительность: до 4 часов\n• Язык: Русский",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "a4f85a9a-ef58-47bc-b2f6-c9dade6b9c3d",
+      "name": "No Voice - Send Help",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        576
+      ],
+      "webhookId": "c9df85c7-b5a9-474c-9732-7c6887133667",
+      "credentials": {
+        "telegramApi": {
+          "id": "K1cNfxlN2ucieAGo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://45.144.179.8:8000/api/v1/metrics",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "workflow_name",
+              "value": "n8n_async_stt"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+            },
+            {
+              "name": "status",
+              "value": "success"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fe49a666-01b5-4cc8-9eb7-11f58a14c7a2",
+      "name": "Log Success Metric",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1712,
+        480
+      ],
+      "id": "5055f168-4835-483c-b8dc-7e467633624b",
+      "name": "Telegram Trigger",
+      "webhookId": "1977e639-30d0-4847-961b-cb397ee6dbae",
+      "credentials": {
+        "telegramApi": {
+          "id": "K1cNfxlN2ucieAGo",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Has Voice Message?": {
+      "main": [
+        [
+          {
+            "node": "Download Voice from Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Voice - Send Help",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Voice from Telegram": {
+      "main": [
+        [
+          {
+            "node": "Start Async Transcription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Async Transcription": {
+      "main": [
+        [
+          {
+            "node": "Notify User - Started",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify User - Started": {
+      "main": [
+        [
+          {
+            "node": "Wait 10 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10 seconds": {
+      "main": [
+        [
+          {
+            "node": "Check Transcription Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Transcription Status": {
+      "main": [
+        [
+          {
+            "node": "Is Transcription Done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Transcription Done?": {
+      "main": [
+        [
+          {
+            "node": "Send Transcription Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 5s and Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Transcription Result": {
+      "main": [
+        [
+          {
+            "node": "Log Success Metric",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s and Retry": {
+      "main": [
+        [
+          {
+            "node": "Retry Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Counter": {
+      "main": [
+        [
+          {
+            "node": "Is Timeout?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Timeout?": {
+      "main": [
+        [
+          {
+            "node": "Send Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Transcription Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Has Voice Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3386092e097f883a29dfea9711fe5d0b1e6ddcdf17d970ae2eae145413f02a1b"
+  }
+}
